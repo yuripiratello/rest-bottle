@@ -62,6 +62,7 @@ def show(db):
     return json.dumps([e.as_dict() for e in entities.all()])
 
 
+@app.post('/person/')
 @app.post('/person')
 def new_person(db):
     facebookId = request.POST.get('facebookId', None)
@@ -79,6 +80,17 @@ def new_person(db):
     except ArgumentError:
         response.status = 412
         return bottle.HTTPResponse('Invalid facebookId', 412)
+
+@app.delete('/person/<facebook_id>')
+def delete_person(facebook_id, db):
+    if not facebook_id:
+        response.status = 404
+        return bottle.HTTPResponse('Parameters not found', 404)
+    entity = db.query(Person).filter_by(facebook_id=facebook_id).first()
+    if not entity:
+        response.status = 404
+        return bottle.HTTPResponse('Person not found', 404)
+    response.status = 204
 
 
 if __name__ == '__main__':
