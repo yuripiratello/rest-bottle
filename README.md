@@ -1,6 +1,9 @@
 rest-bottle
 ===========
 
+Exemplo de API REST feita em [bottlepy](http://bottlepy.org) com unittests e relatório de coverage. 
+Sua funcionalidade é bem simples: você envia um post com o Facebook ID ele grava as informações do usuário em um sqlite na memória e disponibiliza outras ações como listagem, exclusão e edição.  
+
 # Configurações
 
 Instalação do projeto:
