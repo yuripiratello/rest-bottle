@@ -1,9 +1,9 @@
 rest-bottle
 ===========
 
-# Instalação
+# Configurações
 
-Instalando o projeto:
+Instalação do projeto:
 ---------------------
 
     git clone git@github.com:yuripiratello/rest-bottle.git
@@ -32,7 +32,7 @@ Acesse no seu browser o diretório htmlcov que foi gerado pelo coverage.
 
 Para utilizar execute:
 
-   python run.py
+    python run.py
    
 # Exemplos:
 
