@@ -5,6 +5,7 @@ import bottle
 import requests
 from bottle.ext import sqlalchemy
 from sqlalchemy import create_engine, Column, Integer, Sequence, String
+from sqlalchemy.exc import ArgumentError
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -27,11 +28,20 @@ class Person(Base):
 
     def __init__(self, facebook_id):
         self.facebook_id = facebook_id
+        rqf = requests.get('https://graph.facebook.com/{}'.format(facebook_id))
+        user_face = json.loads(rqf.text)
+        if user_face.get('error', None):
+            raise ArgumentError
+        self.name = user_face.get('name')
+        self.username = user_face.get('username')
+        self.gender = user_face.get('gender')
+
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
+@app.get('/person/')
 @app.get('/person')
 def show(db):
     facebookId = request.GET.get('facebookId', None)
@@ -39,9 +49,11 @@ def show(db):
         entity = db.query(Person).filter_by(facebook_id=facebookId).first()
         if entity:
             response.content_type = 'application/json'
+            response.status = 200
             return json.dumps(entity.as_dict())
         else:
-            return bottle.HTTPError('404', 'Person not found')
+            response.status = 404
+            return bottle.HTTPResponse('Person not found', 404)
     response.content_type = 'application/json'
     entities = db.query(Person)
     if request.GET.get('limit', None):
@@ -54,20 +66,21 @@ def show(db):
 def new_person(db):
     facebookId = request.POST.get('facebookId', None)
     if not facebookId:
-        return bottle.HTTPError('404', 'Parameters not found')
+        response.status = 404
+        return bottle.HTTPResponse('Parameters not found', 404)
     entity = db.query(Person).filter_by(facebook_id=facebookId).first()
     if entity:
-        return bottle.HTTPError('409', 'Person already exists')
-    rqf = requests.get('https://graph.facebook.com/{}'.format(facebookId))
-    user_face = json.loads(rqf.text)
-    entity = Person(facebookId)
-    entity.name = user_face.get('name')
-    entity.username = user_face.get('username')
-    entity.gender = user_face.get('gender')
-    db.add(entity)
-    response.status = 201
-    return 'HTTP 201'
+        response.status = 409
+        return bottle.HTTPResponse('Person already exists', 409)
+    try:
+        entity = Person(facebookId)
+        db.add(entity)
+        response.status = 201
+    except ArgumentError:
+        response.status = 412
+        return bottle.HTTPResponse('Invalid facebookId', 412)
 
 
-bottle.debug(True)
-bottle.run(app, host='localhost', port=8388, reloader=True, debug=True)
+if __name__ == '__main__':
+    bottle.debug(True)
+    bottle.run(app, host='localhost', port=8388, reloader=True, debug=True)
