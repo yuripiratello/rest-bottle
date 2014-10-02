@@ -9,6 +9,8 @@ from sqlalchemy import create_engine, Column, Integer, Sequence, String
 from sqlalchemy.exc import ArgumentError
 from sqlalchemy.ext.declarative import declarative_base
 
+logging.basicConfig(filename='rest.log', level=logging.INFO,
+                    format='%(asctime)s %(message)s')
 Base = declarative_base()
 engine = create_engine('sqlite:///:memory:', echo=True)
 
@@ -16,14 +18,6 @@ app = bottle.Bottle()
 plugin = sqlalchemy.Plugin(engine, Base.metadata, keyword='db', create=True,
                            commit=True, use_kwargs=False)
 app.install(plugin)
-
-logging.basicConfig(filename='rest.log', level=logging.INFO,
-                    format='%(asctime)s %(message)s')
-logging.getLogger('sqlalchemy').setLevel(logging.WARNING)
-logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
-logging.getLogger('sqlalchemy.orm').setLevel(logging.WARNING)
-logging.getLogger('sqlalchemy.pool').setLevel(logging.WARNING)
-logging.getLogger('sqlalchemy.dialects').setLevel(logging.WARNING)
 
 
 class Person(Base):
