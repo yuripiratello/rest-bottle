@@ -81,15 +81,14 @@ def new_person(db):
         response.status = 412
         return bottle.HTTPResponse('Invalid facebookId', 412)
 
-@app.delete('/person/<facebook_id>')
+
+@app.delete('/person/<facebook_id>/')
 def delete_person(facebook_id, db):
-    if not facebook_id:
-        response.status = 404
-        return bottle.HTTPResponse('Parameters not found', 404)
     entity = db.query(Person).filter_by(facebook_id=facebook_id).first()
     if not entity:
         response.status = 404
         return bottle.HTTPResponse('Person not found', 404)
+    db.delete(entity)
     response.status = 204
 
 

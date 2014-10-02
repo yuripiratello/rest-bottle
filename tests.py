@@ -54,6 +54,27 @@ class TestGetPerson(unittest.TestCase):
         self.assertEqual(response.json['facebook_id'], 100001885167982)
 
 
+class TestDeletePerson(unittest.TestCase):
+    def test_delete_person(self):
+        response = test_app.post('/person', {
+            'facebookId': 100001885167982
+        }, status=201)
+        self.assertEqual(response.status_int, 201)
+        response = test_app.delete(
+            '/person/100001885167982/', status=204)
+        self.assertEqual(response.status_int, 204)
+
+    def test_delete_person_without_param(self):
+        response = test_app.delete(
+            '/person//', status=404)
+        self.assertEqual(response.status_int, 404)
+
+    def test_delete_person_not_found(self):
+        response = test_app.delete(
+            '/person/100001885167982/', status=404)
+        self.assertEqual(response.status_int, 404)
+
+
 # If running this file, run the tests
 # invoke with `python -m unittest discover`
 if __name__ == '__main__':
